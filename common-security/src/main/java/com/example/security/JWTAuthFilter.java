@@ -1,0 +1,65 @@
+package com.example.security;
+
+import com.example.security.exception.BadRequestException;
+import com.example.security.exception.UnauthorizedException;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
+
+@RequiredArgsConstructor
+public class JWTAuthFilter extends OncePerRequestFilter {
+
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, IOException {
+        // 0. Questo metodo verrà eseguito per ogni request che richieda di essere autenticati
+        // 1. Verifichiamo se c'è l'header Authorization e estraiamo il token da esso
+        // 2. Verifico che il token non sia nè scaduto nè sia stato manipolato
+
+        // 3. Se è tutto OK
+        // 3.1 Cerco l'utente nel database tramite id (l'id sta nel payload del token, quindi devo estrarlo da lì)
+        String id = request.getHeader("X-User-Id");
+        String role = request.getHeader("X-User-Role");
+
+        if (id == null || role == null || id.isBlank() || role.isBlank()) {
+            throw new BadRequestException("Impossibile procedere");
+        }
+        // 3.2 Segnalo a Spring Security che l'utente ha il permesso di procedere
+        // Se non facciamo questa procedura, ci verrà comunque tornato 403
+//                System.out.println(currentUser);
+
+        var authority = new SimpleGrantedAuthority("ROLE_" + role);
+        var authentication = new UsernamePasswordAuthenticationToken(id, null, List.of(authority));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 3.3 Procediamo (vuol dire andare al prossimo blocco della filter chain)
+                filterChain.doFilter(request, response);
+
+        // 4. Se non è OK -> 401
+        // currentUtente.getAuthorities().forEach(System.out::println);
+
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        // Questo metodo serve per specificare quando il filtro JWTAuthFilter non debba entrare in azione
+        // Ad es tutte le richieste al controller /auth/** non devono essere filtrate
+        String pathWithArguments = request.getServletPath() + request.getQueryString();
+
+        List<String> excludedPaths = List.of("/api/users/auth");
+
+        return excludedPaths.stream().anyMatch(pathWithArguments::startsWith);
+    }
+}
