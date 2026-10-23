@@ -53,6 +53,11 @@ public class Utente {
     @Column(columnDefinition = "text")
     private String cap;
 
+    @Column(columnDefinition = "text", unique = true)
+    private String codiceAccesso;
+
+    private OffsetDateTime codiceAccessoScadeAt;
+
     private OffsetDateTime createdAt;
 
     private OffsetDateTime updatedAt;

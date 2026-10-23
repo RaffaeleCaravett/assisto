@@ -1,6 +1,6 @@
 package com.example.user_service.security;
 
-import com.example.user_service.user.UserService;
+import com.example.user_service.utente.UtenteService;
 import com.example.security.dtos.Token;
 import com.example.security.enums.TokenType;
 import io.jsonwebtoken.Jwts;
@@ -18,7 +18,7 @@ import java.util.Map;
 public class JWTTools {
     @Value("${spring.jwt.secret}")
     private String secret;
-    private final UserService userService;
+    private final UtenteService userService;
 
     public Token createTokens(Long id, String type) {
 

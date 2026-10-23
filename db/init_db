@@ -1,0 +1,5 @@
+CREATE USER "adminAssisto" WITH PASSWORD 'As8mQ2vL7nW4cX6hJ1sT5bY9dA3!';
+CREATE DATABASE assisto OWNER "adminAssisto";
+\c assisto
+CREATE EXTENSION IF NOT EXISTS citext;
+GRANT ALL ON SCHEMA public TO "adminAssisto";

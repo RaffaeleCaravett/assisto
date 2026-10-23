@@ -24,9 +24,6 @@ public class Paziente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
-    private Long utenteId;
-
     @Column(columnDefinition = "text")
     private String nome;
 
